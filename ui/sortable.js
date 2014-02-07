@@ -44,6 +44,7 @@ return $.widget("ui.sortable", $.ui.mouse, {
 		helper: "original",
 		items: "> *",
 		opacity: false,
+		orientation: false,
 		placeholder: false,
 		revert: false,
 		scroll: true,
@@ -86,7 +87,13 @@ return $.widget("ui.sortable", $.ui.mouse, {
 		this.refresh();
 
 		//Let's determine if the items are being displayed horizontally
-		this.floating = this.items.length ? o.axis === "x" || this._isFloating(this.items[0].item) : false;
+		if ( o.orientation === "horizontal" || o.axis == "x" ) {
+			this.floating = true;
+		} else if ( o.orientation === "vertical" || o.axis == "y" ) {
+			this.floating = false;
+		} else {
+			this.floating = this.items.length ? this._isFloating(this.items[0].item) : true;
+		}
 
 		//Let's determine the parent's offset
 		this.offset = this.element.offset();
