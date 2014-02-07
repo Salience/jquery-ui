@@ -48,6 +48,7 @@ return $.widget("ui.sortable", $.ui.mouse, {
 		placeholder: false,
 		revert: false,
 		scroll: true,
+		scrollablePanels: false,
 		scrollSensitivity: 20,
 		scrollSpeed: 20,
 		scope: "default",
@@ -364,10 +365,35 @@ return $.widget("ui.sortable", $.ui.mouse, {
 				}
 
 			}
+		}
+		else if (this.options.scrollablePanels) {
+			$(this.options.scrollablePanels).each(function () {
+				var offset = $(this).offset();
+				var panelPosition = { left: offset.left, top: offset.top, right: offset.left + this.offsetWidth, bottom: offset.top + this.offsetHeight };
+				var scrollTop = this.scrollTop,
+					scrollLeft = this.scrollLeft;
+				if (panelPosition.left <= event.pageX && event.pageX <= panelPosition.right) {
+					if (0 <= panelPosition.bottom - event.pageY && panelPosition.bottom - event.pageY < o.scrollSensitivity) {
+						this.scrollTop += o.scrollSpeed;
+					} else if (0 <= event.pageY - panelPosition.top && event.pageY - panelPosition.top < o.scrollSensitivity) {
+						this.scrollTop -= o.scrollSpeed;
+					}
+				}
 
-			if(scrolled !== false && $.ui.ddmanager && !o.dropBehaviour) {
-				$.ui.ddmanager.prepareOffsets(this, event);
-			}
+				if (panelPosition.top <= event.pageY && event.pageY <= panelPosition.bottom) {
+					if (0 <= panelPosition.right - event.pageX && panelPosition.right - event.pageX < o.scrollSensitivity) {
+						this.scrollLeft += o.scrollSpeed;
+					} else if (0 <= event.pageX - panelPosition.left && event.pageX - panelPosition.left < o.scrollSensitivity) {
+						this.scrollLeft -= o.scrollSpeed;
+					}
+				}
+
+				scrolled = scrolled || (this.scrollTop !== scrollTop) || (this.scrollLeft !== scrollLeft);
+			});
+		}
+
+		if (scrolled !== false && $.ui.ddmanager && !o.dropBehaviour) {
+			$.ui.ddmanager.prepareOffsets(this, event);
 		}
 
 		//Regenerate the absolute position used for position checks
