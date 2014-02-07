@@ -32,6 +32,7 @@ return $.widget("ui.sortable", $.ui.mouse, {
 	options: {
 		appendTo: "parent",
 		axis: false,
+		autoScroll: false,
 		connectWith: false,
 		containment: false,
 		cursor: "auto",
@@ -76,6 +77,13 @@ return $.widget("ui.sortable", $.ui.mouse, {
 
 	_isFloating: function( item ) {
 		return (/left|right/).test(item.css("float")) || (/inline|table-cell/).test(item.css("display"));
+	},
+
+	_stopAutoScrolling: function() {
+		if (this.autoScrollHandleId) {
+			clearInterval(this.autoScrollHandleId);
+			this.autoScrollHandleId = null;
+		}
 	},
 
 	_create: function() {
@@ -321,7 +329,7 @@ return $.widget("ui.sortable", $.ui.mouse, {
 
 	},
 
-	_mouseDrag: function(event) {
+	_mouseDrag: function(event, autoScrolling) {
 		var i, item, itemElement, intersection,
 			o = this.options,
 			scrolled = false;
@@ -392,8 +400,19 @@ return $.widget("ui.sortable", $.ui.mouse, {
 			});
 		}
 
-		if (scrolled !== false && $.ui.ddmanager && !o.dropBehaviour) {
-			$.ui.ddmanager.prepareOffsets(this, event);
+		if (scrolled !== false) {
+			if($.ui.ddmanager && !o.dropBehaviour) {
+				$.ui.ddmanager.prepareOffsets(this, event);
+			}
+			if (!autoScrolling) {
+				this._stopAutoScrolling();
+			}
+			if (!this.autoScrollHandleId && this.options.autoScroll) {
+				var that = this;
+				this.autoScrollHandleId = setInterval(function () { that._mouseDrag(event, true); }, 50);
+			}
+		} else {
+			this._stopAutoScrolling();
 		}
 
 		//Regenerate the absolute position used for position checks
@@ -477,6 +496,8 @@ return $.widget("ui.sortable", $.ui.mouse, {
 		if ($.ui.ddmanager && !this.options.dropBehaviour) {
 			$.ui.ddmanager.drop(this, event);
 		}
+
+		this._stopAutoScrolling();
 
 		if(this.options.revert) {
 			var that = this,
