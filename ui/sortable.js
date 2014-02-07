@@ -689,7 +689,7 @@ return $.widget("ui.sortable", $.ui.mouse, {
 	_refreshItems: function(event) {
 
 		this.items = [];
-		this.containers = [this];
+		this.containers = [];
 
 		var i, j, cur, inst, targetData, _queries, item, queriesLength,
 			items = this.items,
@@ -701,7 +701,7 @@ return $.widget("ui.sortable", $.ui.mouse, {
 				cur = $(connectWith[i]);
 				for (j = cur.length - 1; j >= 0; j--){
 					inst = $.data(cur[j], this.widgetFullName);
-					if(inst && inst !== this && !inst.options.disabled) {
+					if(inst && !inst.options.disabled) {
 						queries.push([$.isFunction(inst.options.items) ? inst.options.items.call(inst.element[0], event, { item: this.currentItem }) : $(inst.options.items, inst.element), inst]);
 						this.containers.push(inst);
 					}
@@ -889,6 +889,11 @@ return $.widget("ui.sortable", $.ui.mouse, {
 					continue;
 				}
 				if(this.items[j].item[0] === this.currentItem[0]) {
+					continue;
+				}
+
+				// We want to contain to the current container and not to all the containers within it.
+				if(!(this.items[j].item[0].parentNode === this.containers[innermostIndex].element[0])) {
 					continue;
 				}
 
@@ -1205,7 +1210,11 @@ return $.widget("ui.sortable", $.ui.mouse, {
 		if(this.fromOutside && !noPropagation) {
 			delayedTriggers.push(function(event) { this._trigger("receive", event, this._uiHash(this.fromOutside)); });
 		}
-		if((this.fromOutside || this.domPosition.prev !== this.currentItem.prev().not(".ui-sortable-helper")[0] || this.domPosition.parent !== this.currentItem.parent()[0]) && !noPropagation) {
+		if ((this.fromOutside
+			|| this.domPosition.prev !== this.currentItem.prev().not(".ui-sortable-helper")[0]
+			|| this.placeholder.parent()[0] == this.currentItem.parent()[0]
+			|| this.domPosition.parent !== this.currentItem.parent()[0])
+			&& !noPropagation) {
 			delayedTriggers.push(function(event) { this._trigger("update", event, this._uiHash()); }); //Trigger update callback if the DOM position has changed
 		}
 
