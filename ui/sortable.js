@@ -924,10 +924,10 @@ return $.widget("ui.sortable", $.ui.mouse, {
 
 		// move the item into the container if it's not there already
 		if(this.containers.length === 1) {
-			if (!this.containers[innermostIndex].containerCache.over) {
+			//if (!this.containers[innermostIndex].containerCache.over) {
 				this.containers[innermostIndex]._trigger("over", event, this._uiHash(this));
 				this.containers[innermostIndex].containerCache.over = 1;
-			}
+			//}
 		} else {
 
 			//When entering a new container, we will find the item with the least distance and append our item near it
@@ -969,9 +969,9 @@ return $.widget("ui.sortable", $.ui.mouse, {
 				return;
 			}
 
-			if(this.currentContainer === this.containers[innermostIndex]) {
-				return;
-			}
+			//if(this.currentContainer === this.containers[innermostIndex]) {
+			//	return;
+			//}
 
 			itemWithLeastDistance ? this._rearrange(event, itemWithLeastDistance, null, true) : this._rearrange(event, null, this.containers[innermostIndex].element, true);
 			this._trigger("change", event, this._uiHash());
